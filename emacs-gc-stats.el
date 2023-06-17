@@ -7,7 +7,7 @@
 ;; URL: https://git.sr.ht/~yantar92/emacs-gc-stats
 ;; Package-Requires: ((emacs "25.1"))
 
-;; Version: 1.2
+;; Version: 1.2.1
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -163,7 +163,18 @@ Otherwise, collect symbol."
               (with-temp-buffer
                 (insert-file-contents emacs-gc-stats-file)
                 (ignore-errors (read (current-buffer))))))
-        (session (reverse emacs-gc-stats--data)))
+        (session (reverse emacs-gc-stats--data))
+        (write-region-inhibit-fsync t)
+        ;; We set UTF-8 here to avoid the overhead from
+        ;; `find-auto-coding'.
+        (coding-system-for-write 'utf-8)
+        print-level
+        print-length
+        print-quoted
+        (print-escape-control-characters t)
+        (print-escape-nonascii t)
+        (print-continuous-numbering t)
+        print-number-table)
     ;; remove end data in case if we continue recording.
     (pop emacs-gc-stats--data)
     (with-temp-file emacs-gc-stats-file
@@ -172,7 +183,8 @@ Otherwise, collect symbol."
         (if existing
             (setcdr (cdr existing) (cdr session))
           (push session previous-sessions)))
-      (prin1 previous-sessions (current-buffer)))))
+      (prin1 previous-sessions (current-buffer)))
+    (message "GC stats saved to \"%s\".  You can share the file by sending email to emacs-gc-stats@gnu.org" emacs-gc-stats-file)))
 
 (defun emacs-gc-stats-clear ()
   "Clear GC stats collected so far."

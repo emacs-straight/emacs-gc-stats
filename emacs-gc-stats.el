@@ -7,7 +7,7 @@
 ;; URL: https://git.sr.ht/~yantar92/emacs-gc-stats
 ;; Package-Requires: ((emacs "25.1"))
 
-;; Version: 1.2.1
+;; Version: 1.2.3
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -184,6 +184,11 @@ Otherwise, collect symbol."
             (setcdr (cdr existing) (cdr session))
           (push session previous-sessions)))
       (prin1 previous-sessions (current-buffer)))
+    (when
+	(and (called-interactively-p)
+	     (yes-or-no-p
+	      (format "GC stats saved to \"%s\".  Send email to emacs-gc-stats@gnu.org? " emacs-gc-stats-file)))
+      (browse-url "mailto:emacs-gc-stats@gnu.org"))
     (message "GC stats saved to \"%s\".  You can share the file by sending email to emacs-gc-stats@gnu.org" emacs-gc-stats-file)))
 
 (defun emacs-gc-stats-clear ()
